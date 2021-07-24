@@ -1,12 +1,10 @@
-var plivo = require("plivo");
+const plivo = require("plivo");
 
-const initiateCall = async (req, res, next) => {
+var plivoClient;
+
+const connectCall = async (req, res, next) => {
   try {
-    var authId = process.env.AUTHID;
-    var authToken = process.env.AUTHTOKEN;
-    var client = new plivo.Client(authId, authToken);
-
-    const result = await client.calls.create(
+    const result = await getPlivoClientInstance().calls.create(
       req.body.from, // from
       req.body.to, // to
       process.env.ANSWERURL ||
@@ -16,7 +14,6 @@ const initiateCall = async (req, res, next) => {
         time_limit: parseInt(req.body.time),
       }
     );
-
     res.status(201).json({
       message: "Call Connected",
       requestUuid: result.requestUuid,
@@ -26,6 +23,23 @@ const initiateCall = async (req, res, next) => {
   }
 };
 
+const disconnectCall = async (req, res, next) => {
+  try {
+    await getPlivoClientInstance().calls.cancel(req.body.callUid);
+    res.status(201).json({
+      message: "Call Disconnected",
+    });
+  } catch (ex) {
+    next(ex);
+  }
+};
+
+function getPlivoClientInstance() {
+  if (plivoClient) return plivoClient;
+  return new plivo.Client(process.env.AUTHID, process.env.AUTHTOKEN);
+}
+
 module.exports = {
-  initiateCall,
+  connectCall,
+  disconnectCall,
 };
