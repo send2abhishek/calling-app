@@ -27,3 +27,16 @@ export const disConnectCall = async (payload) => {
     };
   }
 };
+
+export const getCallHistory = async () => {
+  try {
+    const result = await axios.get("/call/history");
+    return {
+      success: result.data,
+    };
+  } catch (error) {
+    return {
+      error: error.response.data.error,
+    };
+  }
+};

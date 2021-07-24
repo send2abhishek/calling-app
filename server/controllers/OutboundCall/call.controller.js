@@ -1,4 +1,5 @@
 const plivo = require("plivo");
+const saveCallDetailsService = require("./call.service");
 
 var plivoClient;
 
@@ -15,6 +16,11 @@ const connectCall = async (req, res, next) => {
         caller_name: req.body.name,
       }
     );
+    await saveCallDetailsService.saveCallDetails({
+      ...req.body,
+      requestUuid: result.requestUuid,
+    });
+
     res.status(201).json({
       message: "Call Connected",
       requestUuid: result.requestUuid,
@@ -40,7 +46,17 @@ function getPlivoClientInstance() {
   return new plivo.Client(process.env.AUTHID, process.env.AUTHTOKEN);
 }
 
+const getCallHistory = async (req, res, next) => {
+  try {
+    const result = await saveCallDetailsService.findAllCallDetailsFromDB();
+    res.status(200).json(result.success);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 module.exports = {
   connectCall,
   disconnectCall,
+  getCallHistory,
 };

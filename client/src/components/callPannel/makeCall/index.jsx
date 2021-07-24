@@ -165,9 +165,9 @@ const MakeCall = () => {
               value={callFormDetails.duration}
               onChange={handleInputChange}
             >
-              <MenuItem value={5}>5 Minutes</MenuItem>
-              <MenuItem value={10}>10 Minutes</MenuItem>
-              <MenuItem value={15}>15 Minutes</MenuItem>
+              <MenuItem value={5 * 60}>5 Minutes</MenuItem>
+              <MenuItem value={10 * 60}>10 Minutes</MenuItem>
+              <MenuItem value={15 * 60}>15 Minutes</MenuItem>
             </Select>
           </FormControl>
           <Typography

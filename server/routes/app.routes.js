@@ -16,4 +16,6 @@ route.post(
   OutBoundCall.disconnectCall
 );
 
+route.get("/call/history", OutBoundCall.getCallHistory);
+
 module.exports = route;

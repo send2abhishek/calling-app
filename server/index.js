@@ -3,6 +3,7 @@ const appRoutes = require("./routes/app.routes");
 const app = express();
 
 require("dotenv").config();
+const { sequelize } = require("./database/dbConnection");
 
 // cors enable
 app.use((req, res, next) => {
@@ -16,14 +17,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// sequelize
-//   .authenticate()
-//   .then(() => {
-//     console.log(config.get("dbconnectMsg"));
-//   })
-//   .catch((err) => {
-//     console.error(config.get("dbConnectError"), err);
-//   });
+if (process.env.NODE_ENV !== "production") {
+  sequelize
+    .sync({})
+    .then(() => {
+      console.log("Tables synched!");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log("db connected");
+  })
+  .catch((err) => {
+    console.error("error in db connection", err);
+  });
 
 app.get("/", (req, res) => {
   res.send("App has started...");
