@@ -42,7 +42,7 @@ const CallHistory = () => {
             <TableCell>Caller Name</TableCell>
             <TableCell>Call From</TableCell>
             <TableCell>Call To</TableCell>
-            <TableCell>Call Duration</TableCell>
+            <TableCell>Call Duration(sec)</TableCell>
             <TableCell>Call Request Uuid</TableCell>
             <TableCell>TimeStamp</TableCell>
           </TableRow>
