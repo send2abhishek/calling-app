@@ -14,11 +14,16 @@ import {
 import CallIcon from "@material-ui/icons/Call";
 import CallEndIcon from "@material-ui/icons/CallEnd";
 
+import Backdrop from "components/Backdrop/";
 import { secondsToTime } from "utils/misc";
+import { dialCallToUser, disConnectCall } from "app/APICallsHandler";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   fullWidth: {
     width: "100%",
+  },
+  root: {
+    margin: "0 auto",
   },
   textBold: {
     fontWeight: "bold",
@@ -31,19 +36,15 @@ const MakeCall = () => {
   const classes = useStyles();
   const [callFormDetails, setCallFormDetails] = useState({
     name: "",
-    phone: "",
+    to: "",
+    from: "",
     duration: "",
   });
   const [callButtonState, setCallButtonState] = useState(false);
+  const [requestUuid, setRequestUuid] = useState(null);
   const [callDuration, setCallDuration] = useState(0);
   const [ellapsedTime, setEllapsedTime] = useState(0);
-
-  const handleCallDisconnect = (e) => {
-    clearInterval(timer);
-    setEllapsedTime(0);
-    setCallDuration(0);
-    setCallButtonState(false);
-  };
+  const [dataFetchingStatus, setDataFetchingStatus] = useState(false);
 
   useEffect(() => {
     if (callDuration !== 0) {
@@ -65,17 +66,46 @@ const MakeCall = () => {
     setCallFormDetails(copyCallFormDetails);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setCallButtonState(true);
-    setCallDuration(callFormDetails.duration * 60);
+    setDataFetchingStatus(true);
+    const { success, error } = await dialCallToUser(callFormDetails);
+
+    if (success) {
+      setCallDuration(callFormDetails.duration * 60);
+      setRequestUuid(success.requestUuid);
+      setDataFetchingStatus(false);
+    } else {
+      alert(error);
+      setRequestUuid(null);
+      setCallButtonState(false);
+      setDataFetchingStatus(false);
+    }
+  };
+
+  const handleCallDisconnect = async (e) => {
+    e.preventDefault();
+    setDataFetchingStatus(true);
+    const { success } = await disConnectCall(requestUuid);
+    if (success) {
+      setRequestUuid(null);
+      setDataFetchingStatus(false);
+    } else {
+      setDataFetchingStatus(false);
+    }
+    clearInterval(timer);
+    setEllapsedTime(0);
+    setCallDuration(0);
+    setCallButtonState(false);
   };
 
   let displayTime = callButtonState ? secondsToTime(ellapsedTime) : null;
 
   return (
     <Grid container>
-      <Grid container item xs={12} md={8} style={{ margin: "0 auto" }}>
+      <Grid container item xs={12} md={8} className={classes.root}>
+        <Backdrop show={dataFetchingStatus} />
         <form className={classes.fullWidth}>
           <TextField
             id="caller-name"
@@ -93,7 +123,7 @@ const MakeCall = () => {
           <TextField
             type="number"
             id="caller-phone-number"
-            label="Caller Phone Number"
+            label="Your Phone Number"
             placeholder="10 Digit Phone Number"
             fullWidth
             InputProps={{
@@ -102,8 +132,25 @@ const MakeCall = () => {
               ),
             }}
             margin="dense"
-            name="phone"
-            value={callFormDetails.phone}
+            name="from"
+            value={callFormDetails.from}
+            onChange={handleInputChange}
+            autoComplete="off"
+          />
+          <TextField
+            type="number"
+            id="seder-phone-number"
+            label="Recipient Phone Number"
+            placeholder="10 Digit Phone Number"
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">+91</InputAdornment>
+              ),
+            }}
+            margin="dense"
+            name="to"
+            value={callFormDetails.to}
             onChange={handleInputChange}
             autoComplete="off"
           />
@@ -134,7 +181,8 @@ const MakeCall = () => {
               onClick={handleSubmit}
               disabled={
                 callFormDetails.name.length === 0 ||
-                callFormDetails.phone.length < 10 ||
+                callFormDetails.to.length < 10 ||
+                callFormDetails.from.length < 10 ||
                 callFormDetails.duration.length === 0 ||
                 callButtonState
               }

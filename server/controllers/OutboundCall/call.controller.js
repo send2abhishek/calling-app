@@ -5,13 +5,14 @@ var plivoClient;
 const connectCall = async (req, res, next) => {
   try {
     const result = await getPlivoClientInstance().calls.create(
-      req.body.from, // from
-      req.body.to, // to
+      `+91${req.body.from}`, // from
+      `+91${req.body.to}`, // to
       process.env.ANSWERURL ||
         "https://s3.amazonaws.com/static.plivo.com/answer.xml", // answer url
       {
         answerMethod: "GET",
-        time_limit: parseInt(req.body.time),
+        time_limit: parseInt(req.body.duration),
+        caller_name: req.body.name,
       }
     );
     res.status(201).json({

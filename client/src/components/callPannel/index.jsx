@@ -7,8 +7,8 @@ import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 
-import MakeCall from "components/callPannel/makeCall/";
-import CallHistory from "components/callPannel/callHistory/";
+import MakeCall from "components/CallPannel/MakeCall";
+import CallHistory from "components/CallPannel/CallHistory";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;

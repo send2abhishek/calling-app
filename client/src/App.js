@@ -1,5 +1,5 @@
 import Layout from "components/layout/";
-import CallPannel from "components/callPannel/";
+import CallPannel from "components/CallPannel";
 
 function App() {
   return (
