@@ -8,7 +8,7 @@ const initiateCall = async (req, res, next) => {
 
     const result = await client.calls.create(
       req.body.from, // from
-      req.body, // to
+      req.body.to, // to
       process.env.ANSWERURL ||
         "https://s3.amazonaws.com/static.plivo.com/answer.xml", // answer url
       {
