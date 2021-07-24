@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Grid,
   FormControl,
@@ -9,14 +9,23 @@ import {
   InputAdornment,
   Select,
   makeStyles,
+  Typography,
 } from "@material-ui/core";
 import CallIcon from "@material-ui/icons/Call";
+import CallEndIcon from "@material-ui/icons/CallEnd";
+
+import { secondsToTime } from "utils/misc";
 
 const useStyles = makeStyles((theme) => ({
   fullWidth: {
     width: "100%",
   },
+  textBold: {
+    fontWeight: "bold",
+  },
 }));
+
+var timer;
 
 const MakeCall = () => {
   const classes = useStyles();
@@ -25,6 +34,30 @@ const MakeCall = () => {
     phone: "",
     duration: "",
   });
+  const [callButtonState, setCallButtonState] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [ellapsedTime, setEllapsedTime] = useState(0);
+
+  const handleCallDisconnect = (e) => {
+    clearInterval(timer);
+    setEllapsedTime(0);
+    setCallDuration(0);
+    setCallButtonState(false);
+  };
+
+  useEffect(() => {
+    if (callDuration !== 0) {
+      timer = setInterval(() => {
+        setEllapsedTime((state) => state + 1);
+      }, 1000);
+    }
+  }, [callDuration]);
+
+  useEffect(() => {
+    if (callDuration === ellapsedTime) {
+      clearInterval(timer);
+    }
+  }, [callDuration, ellapsedTime]);
 
   const handleInputChange = (e) => {
     const copyCallFormDetails = { ...callFormDetails };
@@ -34,8 +67,11 @@ const MakeCall = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(callFormDetails);
+    setCallButtonState(true);
+    setCallDuration(callFormDetails.duration * 60);
   };
+
+  let displayTime = callButtonState ? secondsToTime(ellapsedTime) : null;
 
   return (
     <Grid container>
@@ -87,19 +123,44 @@ const MakeCall = () => {
               <MenuItem value={15}>15 Minutes</MenuItem>
             </Select>
           </FormControl>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<CallIcon />}
-            onClick={handleSubmit}
-            disabled={
-              callFormDetails.name.length === 0 ||
-              callFormDetails.phone.length < 10 ||
-              callFormDetails.duration.length === 0
-            }
+          <Typography
+            component="div"
+            style={{ display: "flex", justifyContent: "space-between" }}
           >
-            Call
-          </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<CallIcon />}
+              onClick={handleSubmit}
+              disabled={
+                callFormDetails.name.length === 0 ||
+                callFormDetails.phone.length < 10 ||
+                callFormDetails.duration.length === 0 ||
+                callButtonState
+              }
+            >
+              Call
+            </Button>
+            {callButtonState && (
+              <Typography>
+                Call Duration -{" "}
+                <span className={classes.textBold}>
+                  {displayTime && displayTime.m}:{displayTime && displayTime.s}
+                </span>
+              </Typography>
+            )}
+            {callButtonState && (
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<CallEndIcon />}
+                onClick={handleCallDisconnect}
+                disabled={!callButtonState}
+              >
+                Call Disconnect
+              </Button>
+            )}
+          </Typography>
         </form>
       </Grid>
     </Grid>
